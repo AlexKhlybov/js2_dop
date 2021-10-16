@@ -128,10 +128,10 @@ class Basket {
     };
 };
 
-// const list = new GoodsList();
-// list.fethGoods();
-// console.log(list.getSumPrice());
-// list.render();
+const list = new GoodsList();
+list.fethGoods();
+console.log(list.getSumPrice());
+list.render();
 
 
 // Для тестов в консоли

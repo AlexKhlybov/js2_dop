@@ -96,11 +96,9 @@ class GoodsList {
     };
 };
 
-class BasketItem {
+class BasketItem extends Goods{
     constructor(id, title, price, discount = 0) {
-        this.id = id;
-        this.title = title;
-        this.price = price;
+        super(id, title, price)
         this.discount = discount; // Указывается в процентах - 20%, 30% и т.д.
     };
 
@@ -116,6 +114,18 @@ class Basket {
         this.urlBasket = "getBasket.json"
         this.urlAddToBasket = "addToBasket.json"
         this.urlDeleteFromBasket = "deleteFromBasket.json"
+        this.modal = document.querySelector('#goodsModal');
+        this.windowBasket = document.querySelector('#basketModal');
+        this.modalBasket = document.createElement('div');
+
+        this._btn = document.getElementById('headerButton');
+        this._btn.addEventListener('click', this._onToggleBasket.bind(this));
+    };
+
+    // Обработчик нажатия на корзину
+    _onToggleBasket() {
+        this.modal.classList.toggle("basket-modal__active");
+        this.drawModalBasket();
     };
 
     // Получаем корзину с сервера
@@ -126,6 +136,7 @@ class Basket {
         })
         .then((request) => {
             this.basketList = request;
+            console.log(this.basketList)
         })
         .then(() => { this.renderBasket() })
         .catch((error) => {
@@ -135,7 +146,6 @@ class Basket {
 
     // Отрисовываем кол-во и сумму карзины в шапке
     renderBasket() {
-        console.log(this.basketList);
         document.getElementById('cartCounter').innerHTML = this.basketList.countGoods;
         document.getElementById('headerPrice').innerHTML = `${this.basketList.amount} руб.`;
         
@@ -144,55 +154,56 @@ class Basket {
     // Добавляет товар в корзину
     addGoodsBasket(id) { 
         fetch(`${API_URL}${this.urlAddToBasket}`)
-        .then((response) => {
-            return response.json();
-        })
-        .then(request => { 
-            let resultArr = this.basketList.contents.filter(item => {
-                return item.id_product == id;
-            });
-            if (resultArr.length) {
-                resultArr[0].quantity += request.result;
-                console.log('Кол-во товара увеличено!');
-                this.basketList.countGoods += request.result;
-                this.basketList.amount += resultArr[0].price;
-            };
-        })
-        .then(() => { this.renderBasket() })
-        .catch((error) => { console.log(error.text) })
+            .then((response) => {
+                return response.json();
+            })
+            .then(request => { 
+                let resultArr = this.basketList.contents.filter(item => {
+                    return item.id_product == id;
+                });
+                if (resultArr.length) {
+                    resultArr[0].quantity += request.result;
+                    console.log('Кол-во товара увеличено!');
+                    this.basketList.countGoods += request.result;
+                    this.basketList.amount += resultArr[0].price;
+                };
+            })
+            .then(() => { this.renderBasket() })
+            .catch((error) => { console.log(error.text) })
         
     };
 
     // Удаляет товар из корзины
     removeGoodsBasket(id) {
         fetch(`${API_URL}${this.urlDeleteFromBasket}`)
-        .then((response) => {
-            return response.json();
-        })
-        .then(request => {
-            let resultArr = this.basketList.contents.filter(item => {
-                return item.id_product == id;
-            });
-            if (resultArr.length) {
-                resultArr[0].quantity -= request.result;
-                console.log('Кол-во товара уменьшено!');
-                this.basketList.countGoods -= request.result;
-                this.basketList.amount -= resultArr[0].price;
-            };
-        })
-        .then(() => { this.renderBasket() })
-        .catch((error) => { console.log(error.text) })
+            .then((response) => {
+                return response.json();
+            })
+            .then(request => {
+                let resultArr = this.basketList.contents.filter(item => {
+                    return item.id_product == id;
+                });
+                if (resultArr.length) {
+                    resultArr[0].quantity -= request.result;
+                    console.log('Кол-во товара уменьшено!');
+                    this.basketList.countGoods -= request.result;
+                    this.basketList.amount -= resultArr[0].price;
+                };
+            })
+            .then(() => { this.renderBasket() })
+            .catch((error) => { console.log(error.text) })
     };
 
     // Сумма всей корзины
     getSumBasket() {
-        let totalPrice = 0;
-        let totalAmmount = 0;
-        this.basketList.forEach(item => {
-            totalPrice += item.goods.price * item.ammount;
-            totalAmmount += item.ammount;
+        let totalAmount = 0;
+        let totalQuantity = 0;
+        this.basketList.contents.forEach(item => {
+            totalAmount += item.price * item.quantity;
+            totalQuantity += item.quantity;
         });
-        console.log(`${totalAmmount} товаров, на сумму = ${totalPrice} руб.`);
+        this.basketList.amount = totalAmount;
+        this.basketList.countGoods = totalQuantity;
     };
 
     // Сумма всей корзины с учетом скидки
@@ -204,6 +215,134 @@ class Basket {
             totalAmmount += item.ammount;
         });
         console.log(`${totalAmmount} товаров, на сумму = ${totalPrice} руб.`);
+    };
+
+    //Рисуем заголовок корзины
+    drawBasketTitle(message) {
+        const basketTitle = document.createElement('h2');
+        basketTitle.classList.add('basket__title');
+        basketTitle.textContent = message;
+
+        this.modalBasket.appendChild(basketTitle);
+    };
+
+    //Если корзина пустая, скажем об этом
+    drawBasketEmpty(messages) {
+        const wrap = document.createElement('p');
+        wrap.textContent = messages;
+
+        this.modalBasket.appendChild(wrap);
+    };
+
+    //Отрисовываем корзину с товарами в виде таблицы
+    drawBasketProduct(product, listProduct){
+        console.log(product)
+        const goods = document.createElement('li');
+        goods.className = 'goods__item';
+
+        const goodsLeft = document.createElement('div');
+        goodsLeft.className = 'goods__left';
+
+        const goodsTitle = document.createElement('h3');
+        goodsTitle.className = 'goods__title';
+        goodsTitle.textContent = product.product_name;
+
+        goodsLeft.appendChild(goodsTitle);
+
+        const goodsRight = document.createElement('div');
+        goodsRight.className = 'goods__right';
+
+        const goodsNum = document.createElement('p');
+        goodsNum.className = 'goods__number';
+        goodsNum.textContent = `${product.quantity}`;
+
+        goodsRight.appendChild(goodsNum);
+
+        goods.appendChild(goodsLeft);
+        goods.appendChild(goodsRight);
+
+        listProduct.appendChild(goods);
+
+        this.modalBasket.appendChild(listProduct);
+
+    };
+
+    //Отрисовываем "close" модального окна
+    drawBasketClose() {
+        const closeModal = document.createElement('button');
+        closeModal.setAttribute('class', 'button__close');
+        closeModal.setAttribute('type', 'button');
+
+        const closeImg = document.createElement('img');
+        closeImg.setAttribute('class', 'close');
+        closeImg.setAttribute('src', 'img/close.svg');
+        closeImg.setAttribute('alt', 'Close');
+
+        closeModal.appendChild(closeImg);
+
+        this.modalBasket.appendChild(closeModal);
+
+        closeModal.addEventListener('click', this._onToggleBasket.bind(this))
+    };
+
+    //Отрисовываем сепаратор
+    drawSeparator() {
+        const separator = document.createElement('hr');
+        separator.className = 'separator';
+
+        this.modalBasket.appendChild(separator);
+    };
+
+    //Отрисовываем итог корзины
+    drawBasketTotal() {
+        const total = document.createElement('div');
+        total.className = 'total';
+
+        const totalText = document.createElement('p');
+        totalText.className = 'total__text';
+        totalText.textContent = 'Итого: ';
+
+        const totalNum = document.createElement('div');
+        totalNum.className = 'total__num';
+        totalNum.textContent = `${this.basketList.amount} руб.`
+
+        total.appendChild(totalText);
+        total.appendChild(totalNum);
+
+        this.modalBasket.appendChild(total);
+    };
+
+    //Отрисовываем корзину в модальное окно
+    drawModalBasket() {
+        this.modalBasket.className = 'basket-modal__content';
+        this.modalBasket.textContent = '';
+
+        this.drawBasketClose();
+
+        console.log(this.basketList.countGoods);
+        if (this.basketList.countGoods == 0){
+            this.drawBasketTitle('Корзина: ');
+            this.drawSeparator();
+            this.drawBasketEmpty('Ваша корзина пуста!');
+        } else {
+            this.drawBasketTitle('Корзина: ');
+            this.drawSeparator();
+
+            const listProduct = document.createElement('ul');
+            listProduct.className = 'basket__list';
+
+            this.basketList.contents.forEach(el => {
+                this.drawBasketProduct(el, listProduct);
+            });
+
+            this.drawSeparator();
+
+            this.getSumBasket();
+            this.drawBasketTotal();
+            // this.drawButtonNext();
+
+        };
+        this.windowBasket.appendChild(this.modalBasket);
     };
 };
 
@@ -234,44 +373,3 @@ document.addEventListener('click', function(e) {
         basket.removeGoodsBasket(idProd);
     };
 });
-
-
-// // Для тестов в консоли
-// let item1 = new BasketItem('Хлеб', 50, 0);
-// let item2 = new BasketItem('Масло', 100, 0);
-// let item3 = new BasketItem('Молоко', 70, 15);
-
-// let bask = new Basket();
-// bask.addGoodsBasket(item1);
-// bask.addGoodsBasket(item2);
-// bask.addGoodsBasket(item3);
-// bask.addGoodsBasket(item1);
-// bask.addGoodsBasket(item1);
-// bask.addGoodsBasket(item1);
-
-// bask.removeGoodsBasket(item1);
-// bask.removeGoodsBasket(item1);
-// bask.removeGoodsBasket(item3);
-// bask.printBasket();
-// bask.getSumBasket();
-// bask.getDiscountBasket();
-
-
-// {
-//     "amount": 46600,
-//     "countGoods": 2,
-//     "contents": [
-//       {
-//         "id_product": 123,
-//         "product_name": "Ноутбук",
-//         "price": 45600,
-//         "quantity": 1
-//       },
-//       {
-//         "id_product": 456,
-//         "product_name": "Мышка",
-//         "price": 1000,
-//         "quantity": 1
-//       }
-//     ]
-//   }

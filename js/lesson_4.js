@@ -1,9 +1,5 @@
-const reg = new RegExp('abc\?', 'gi');
+let phone = "+7(495)000-0000"
 
-const str1 = 'asdfasdf'
-const str2 = 'abc? asdf abc? abc? Abc?'
+let pattern = /\+\d{1}\(\d{3}\)\d{3}\-\d{4}/
 
-console.log(reg.test(str1))
-console.log(reg.test(str2))
-
-console.log(str2.match(reg))
+console.log(pattern.test(phone))

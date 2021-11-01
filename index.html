@@ -9,49 +9,143 @@
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <div class="header__item">
-                <div class="header__left">
-                    <div class="header__logo">
-                        <a class="header__link" href="#">ProMag</a>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header__item">
+                    <div class="header__left">
+                        <div class="header__logo">
+                            <a class="header__link" href="#">ProMag</a> 
+                        </div>
+                        <nav class="nav">
+                            <a class="nav-link  link-dark" @click="isVisibleWriteTo" id="writeTo" href="#">Напишите нам</a>
+                        </nav>
                     </div>
-                    <nav class="nav">
-                        <a class="nav-link  link-dark" id="writeTo" href="#">Напишите нам</a>
-                        <a class="nav-link  link-dark" href="#">Link</a>
-                        <a class="nav-link  link-dark" href="#">Link</a>
-                    </nav>
+                    <div class="header__cart">
+                        <div class="d-flex">
+                            <input class="form-control me-2" v-model="searchLine" placeholder="Поиск" aria-label="Search">
+                            <button class="btn btn-outline-success" v-on:click="filterGoods">Поиск</button>
+                        </div>
+                        <button class="header__cart-button" @click="isVisibleCart" id="headerButton" type="button">
+                            <img class="header__img" src="img/cart_img.svg" alt="Корзина">
+                        </button>
+                        <div class="counter" id="headerCounter">
+                            <p class="counter__text" id="cartCounter">{{ amountCart.quantity }}</p>
+                        </div>
+                        <div class="price">
+                            <p class="price__text" id="headerPrice">{{ amountCart.amount }} руб.</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="header__cart">
-                    <button class="header__cart-button" id="headerButton" type="button">
-                        <img class="header__img" src="img/cart_img.svg" alt="Корзина">
-                    </button>
-                    <div class="counter" id="headerCounter">
-                        <p class="counter__text" id="cartCounter">0</p>
-                    </div>
-                    <div class="price">
-                        <p class="price__text" id="headerPrice">0 руб.</p>
+            </div> <!-- ./container -->
+        </header>
+
+        <main>
+            <div class="container">
+                <div class="goods-list  row  mt-5">
+                    <div class="card  col  col-md-6  col-sm-12  m-3" v-for="good of filteredGoods" v-bind:key="good.id_product" style="width: 18rem;">
+                        <img src="img/6.jpg" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ good.product_name }}</h5>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                            <p>{{ good.price }} р.</p>
+                            <div class="d-flex">
+                                <button class="btn  btn-success  w-100  btn-sm  mx-1  btn--plus">Добавить</button>
+                                <button class="btn  btn-danger  w-100  btn-sm  mx-1  btn--minus">Удалить</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div> <!-- ./container -->
-    </header>
-    <main>
-        <div class="container">
-            <div class="goods-list  row  mt-5"></div>
+        </main>
+
+        <!-- Basket Modal -->
+        <div class="basket-modal" v-if="isVisibleCard" id="goodsModal">
+            <div class="container">
+                <div class="basket-modal__inner" id='basketModal'>
+                    <div class="basket-modal__content">
+                        <button class="button__close" @click="isVisibleCart" type="button">
+                            <img class="close" src="img/close.svg" alt="...">
+                        </button>
+                        <h2 class="basket__title">Корзина: </h2>
+                        <hr class="separator">
+                        <template v-if="!basketList.contents || !basketList.contents.length">
+                            <ul class="basket__list">
+                                <li class="goods__item">Нет данных</li>
+                            </ul>
+                            <hr class="separator">
+                        </template>
+                        <template v-else>
+                            <ul class="basket__list">
+                                <li class="goods__item" v-for="item of basketList.contents" v-bind:key="item.id_product">
+                                    <div class="goods__left">
+                                        <h3 class="goods__title">{{ item.product_name }}</h3>
+                                    </div>
+                                    <div class="goods__right">
+                                        <p class="goods__number">{{ item.quantity }}</p>
+                                    </div>
+                                </li>
+                            </ul>
+                            <hr class="separator">
+                            <div class="total">
+                                <p class="total__text">Итого: </p>
+                                <div class="total__num">{{ amountCart.amount }} руб.</div>
+                            </div>
+                        </template>
+
+                    </div><!-- ./basket-modal__content -->
+                </div><!-- ./basket-modal__inner -->
+            </div> <!-- ./container -->
         </div>
-    </main>
-    <!-- Basket Modal -->
-    <div class="basket-modal" id="goodsModal">
-        <div class="container">
-            <div class="basket-modal__inner" id='basketModal'></div>
-        </div>
+        <!-- WriteTo Modal -->
+        <div class="basket-modal" v-if="isVisibleWrite">
+            <div class="container">
+                <div class="basket-modal__inner" id='basketModal'>
+                    <div class="basket-modal__content">
+                        <button class="button__close" @click="isVisibleWriteTo" type="button">
+                            <img class="close" src="img/close.svg" alt="...">
+                        </button>
+                        <h2 class="basket__title">Форма обратной связи: </h2>
+                        <hr class="separator">
+                        <form class="row  g-3" name="writeForm" method="post" id="writeForm">
+                            <div class="col-12">
+                                <label for="inputName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="inputName">
+                            </div>
+                            <div class="col-12">
+                                <label for="inputPhone" class="form-label">Phone</label>
+                                <input type="text" class="form-control" id="inputPhone">
+                            </div>
+                            <div class="col-12">
+                                <label for="inputEmail" class="form-label">Email</label>
+                                <input type="text" class="form-control" id="inputEmail">
+                            </div>
+                            <div class="col-12  mb-3">
+                                <label for="textarea" class="form-label">Text</label>
+                                <textarea class="form-control" id="textarea" rows="3"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button class="btn btn-primary" type="submit" id="btnSubmit">Отправить</button>
+                            </div>
+                        </form>
+                    </div>
+                    <hr class="separator">
+                </div><!-- /.basket-modal__inner -->
+            </div><!-- /.container -->
+        </div><!-- /.basket-modal -->
     </div>
 
-    <script src="js/script.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+    <script src="./lesson5.js"></script>
 </body>
 
+</html>
+
+    
+    
+</body>
 </html>

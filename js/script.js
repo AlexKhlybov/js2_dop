@@ -61,33 +61,73 @@ class DrawingMixin extends LocalStorageMixin {
     constructor() {
         super();
         this.modal = document.querySelector('#goodsModal');
-        this.windowBasket = document.querySelector('#basketModal');
-        this.modalBasket = document.createElement('div');
+        this.windowInner = document.querySelector('#basketModal');
+
+        this.modalInner = document.createElement('div');
+        this.modalInner.className = 'basket-modal__content';
+
+        this._closeModal;
     };
 
-    
+    //Отрисовываем "close" модального окна
+    drawModalClose() {
+        this._closeModal = document.createElement('button');
+        this._closeModal.setAttribute('class', 'button__close');
+        this._closeModal.setAttribute('type', 'button');
 
-    // Отрисовываем кол-во и сумму карзины в шапке
-    renderBasket(basketList) {
-        document.getElementById('cartCounter').innerHTML = basketList.countGoods;
-        document.getElementById('headerPrice').innerHTML = `${basketList.amount} руб.`;
+        const closeImg = document.createElement('img');
+        closeImg.setAttribute('class', 'close');
+        closeImg.setAttribute('src', 'img/close.svg');
+        closeImg.setAttribute('alt', 'Close');
+
+        this._closeModal.appendChild(closeImg);
+        this.modalInner.appendChild(this._closeModal);
     };
 
-    //Рисуем заголовок корзины
-    drawBasketTitle(message) {
+    // Отрисовываем заголовок модального окна
+    drawModalTitle(message) {
         const basketTitle = document.createElement('h2');
         basketTitle.classList.add('basket__title');
         basketTitle.textContent = message;
 
-        this.modalBasket.appendChild(basketTitle);
+        this.modalInner.appendChild(basketTitle);
     };
 
-    //Если корзина пустая, скажем об этом
-    drawBasketEmpty(messages) {
+    // Сообщение в тело модального окна
+    drawModalMessage(messages) {
         const wrap = document.createElement('p');
         wrap.textContent = messages;
 
-        this.modalBasket.appendChild(wrap);
+        this.modalInner.appendChild(wrap);
+    };
+
+    //Отрисовываем сепаратор
+    drawModalSeparator() {
+        const separator = document.createElement('hr');
+        separator.className = 'separator';
+
+        this.modalInner.appendChild(separator);
+    };
+
+    // очищает и возвращает div модального окна
+    clearDivModal() {
+        let modal = document.querySelector(".basket-modal__content");
+        if (modal) {
+            modal.parentNode.removeChild(modal);
+            this.modalInner.innerHTML = "";
+        };
+    };
+};
+
+class DrawingBasketMixin extends DrawingMixin {
+    constructor() {
+        super();
+    };
+
+    // Отрисовываем кол-во и сумму карзины в шапке
+    drawHeaderBasket(basketList) {
+        document.getElementById('cartCounter').innerHTML = basketList.countGoods;
+        document.getElementById('headerPrice').innerHTML = `${basketList.amount} руб.`;
     };
 
     //Отрисовываем корзину с товарами в виде таблицы
@@ -118,34 +158,8 @@ class DrawingMixin extends LocalStorageMixin {
 
         listProduct.appendChild(goods);
 
-        this.modalBasket.appendChild(listProduct);
+        this.modalInner.appendChild(listProduct);
 
-    };
-
-    //Отрисовываем "close" модального окна
-    drawBasketClose() {
-        const closeModal = document.createElement('button');
-        closeModal.setAttribute('class', 'button__close');
-        closeModal.setAttribute('type', 'button');
-
-        const closeImg = document.createElement('img');
-        closeImg.setAttribute('class', 'close');
-        closeImg.setAttribute('src', 'img/close.svg');
-        closeImg.setAttribute('alt', 'Close');
-
-        closeModal.appendChild(closeImg);
-
-        this.modalBasket.appendChild(closeModal);
-
-        closeModal.addEventListener('click', this._onToggleBasket.bind(this))
-    };
-
-    //Отрисовываем сепаратор
-    drawSeparator() {
-        const separator = document.createElement('hr');
-        separator.className = 'separator';
-
-        this.modalBasket.appendChild(separator);
     };
 
     //Отрисовываем итог корзины
@@ -164,38 +178,90 @@ class DrawingMixin extends LocalStorageMixin {
         total.appendChild(totalText);
         total.appendChild(totalNum);
 
-        this.modalBasket.appendChild(total);
+        this.modalInner.appendChild(total);
     };
 
     //Отрисовываем корзину в модальное окно
-    drawModalBasket(basketList, sumBasket) {
-        this.modalBasket.className = 'basket-modal__content';
-        this.modalBasket.textContent = '';
+    drawBasketInner(basketList) {
+        this.clearDivModal();
 
-        this.drawBasketClose();
+        this.drawModalClose();
+        this.drawModalTitle('Корзина: ');
+        this.drawModalSeparator();
 
         if (this.basketList.countGoods == 0){
-            this.drawBasketTitle('Корзина: ');
-            this.drawSeparator();
-            this.drawBasketEmpty('Ваша корзина пуста!');
+            this.drawModalMessage('Ваша корзина пуста!');
         } else {
-            this.drawBasketTitle('Корзина: ');
-            this.drawSeparator();
-
             const listProduct = document.createElement('ul');
             listProduct.className = 'basket__list';
-
             basketList.contents.forEach(el => {
                 this.drawBasketProduct(el, listProduct);
             });
 
-            this.drawSeparator();
+            this.drawModalSeparator();
 
             this.drawBasketTotal(basketList);
             // this.drawButtonNext();
 
         };
-        this.windowBasket.appendChild(this.modalBasket);
+        this.windowInner.appendChild(this.modalInner);
+    };
+};
+
+class DrawingWriteToMixin extends DrawingMixin {
+    constructor() {
+        super();
+        this._html = '';
+
+        this._link = document.getElementById("writeTo");
+        this._link.addEventListener('click', this._onSubmitForm);
+
+        this._btnSubmit = document.createElement('btn');
+    };
+
+    drawWriteForm() {
+        this.clearDivModal();
+
+        this.drawModalClose();
+        this.drawModalTitle('Форма обратной связи: ');
+        this.drawModalSeparator();
+
+        const formWrite = document.createElement('form');
+        formWrite.className = 'row  g-3';
+        formWrite.setAttribute("name", "writeForm");
+        formWrite.setAttribute("method", "post");
+        formWrite.setAttribute("id", "writeForm");
+
+        let html = this.drawInputField('inputName', 'Name', 'text');
+        html += this.drawInputField('inputPhone', 'Phone', 'text');
+        html += this.drawInputField('inputEmail', 'Email', 'email');
+        html += this.drawTextareaField('textarea', 'Text', 3);
+        html += this.drawBtn('Submit');
+
+        formWrite.insertAdjacentHTML('beforeend', html);
+        this.modalInner.appendChild(formWrite);
+
+        this.windowInner.appendChild(this.modalInner);
+    };
+
+    drawInputField(labForID, labVal, type) {
+        return `<div class="col-12">
+                    <label for="${labForID}" class="form-label">${labVal}</label>
+                    <input type="${type}" class="form-control" id="${labForID}">
+                </div>`
+    }
+
+    drawTextareaField(labForID, labVal, rows) {
+        return `<div class="col-12  mb-3">
+                    <label for="${labForID}" class="form-label">${labVal}</label>
+                    <textarea class="form-control" id="${labForID}" rows="${rows}"></textarea>
+                </div>`
+    };
+
+    drawBtn(val) {
+        return `<div class="col-12">
+                    <button class="btn btn-primary" type="submit" id="btnSubmit">${val}</button>
+                </div>`;
     };
 };
 
@@ -226,6 +292,18 @@ class GoodsList extends DrawingMixin{
     constructor() {
         super();
         this.goods = [];
+
+        document.addEventListener('click', this._onAddRemoveGoods);
+    };
+
+    // Слушает кнопки "Добавить" и "Удалить"
+    _onAddRemoveGoods(e) {
+        let idProd = e.target.dataset.id;
+        if (e.target.classList.contains('btn--plus')) {
+            basket.addGoodsBasket(idProd);
+        } else if (e.target.classList.contains('btn--minus')) {
+            basket.removeGoodsBasket(idProd);
+        };
     };
 
     fethGoods() {
@@ -279,10 +357,10 @@ class BasketItem extends Goods{
     };
 };
 
-class Basket extends DrawingMixin {
+class Basket extends DrawingBasketMixin {
     constructor() {
         super();
-        this.basketList = []; // [{goods: BasketItem {...}, ammount: 1}, ]
+        this.basketList = [];
         this.urlBasket = "getBasket.json";
         this.urlAddToBasket = "addToBasket.json";
         this.urlDeleteFromBasket = "deleteFromBasket.json";
@@ -294,7 +372,8 @@ class Basket extends DrawingMixin {
     // Обработчик нажатия на корзину
     _onToggleBasket() {
         this.modal.classList.toggle("basket-modal__active");
-        this.drawModalBasket(this.basketList);
+        this.drawBasketInner(this.basketList);
+        this._closeModal.addEventListener('click', this._onToggleBasket.bind(this));
     };
 
     // Получаем корзину с сервера
@@ -311,12 +390,12 @@ class Basket extends DrawingMixin {
                 this._setLocalStorage('basket', request);
                 this.basketList = request;
             })
-            .then(() => { this.renderBasket() })
+            .then(() => { this.drawHeaderBasket() })
             .catch((error) => {
                 console.log(error.text);
             })
         };
-        this.renderBasket(this.basketList);
+        this.drawHeaderBasket(this.basketList);
     };
 
     // Добавляет товар в корзину
@@ -345,7 +424,7 @@ class Basket extends DrawingMixin {
                     };
                     this.getSumBasket();
             })
-            .then(() => { this.renderBasket(this.basketList) })
+            .then(() => { this.drawHeaderBasket(this.basketList) })
             .catch((error) => { console.log(error.text) })
         
     };
@@ -373,7 +452,7 @@ class Basket extends DrawingMixin {
                     });
                 };
             })
-            .then(() => { this.renderBasket(this.basketList) })
+            .then(() => { this.drawHeaderBasket(this.basketList) })
             .catch((error) => { console.log(error.text) })
     };
 
@@ -403,7 +482,91 @@ class Basket extends DrawingMixin {
     //Запускаем отрисовку
     render() {
         this.getSumBasket();
-        this.drawModalBasket(this.basketList);
+        this.drawBasketInner(this.basketList);
+    };
+};
+
+class WriteTo extends DrawingWriteToMixin {
+    constructor() {
+        super();
+        this._link = document.getElementById("writeTo");
+        this._link.addEventListener('click', this._onToggleBasket.bind(this));
+
+        this._stopValidity = false;
+    };
+
+    // Обработчик нажатия меню "Напишите нам"
+    _onToggleBasket() {
+        this.modal.classList.toggle("basket-modal__active");
+        this.drawWriteForm();
+
+        this._btnSubmit = document.getElementById("writeForm");
+        this._btnSubmit.addEventListener('submit', this._validateForm.bind(this));
+        this._closeModal.addEventListener('click', this._onToggleBasket.bind(this));
+    };
+
+    // Валидируем форму
+    _validateForm(e) {
+        this._stopValidity = false;
+        for (const item of e.target) {
+            if (item.id === 'inputName') {
+                this._validateField(
+                    item, 
+                    /[a-z,A-Z]+/, 
+                    "Имя не может быть пустым и не может содержать цифры!");
+            };
+            if (item.id === 'inputPhone') {
+                this._validateField(
+                    item, 
+                    // /\b\d{11}\b/, 
+                    /\+\d{1}\(\d{3}\)\d{3}\-\d{4}/, 
+                    "Телефон должен быть вида: +7(999)000-0000");
+            };
+            if (item.id === 'inputEmail') {
+                this._validateField(
+                    item, 
+                    /^([a-z0-9_\.-]+)@([a-z0-9_\.-]+)\.([a-z\.]{2,6})$/, 
+                    "Введите корректный Email. Пример: example@mail.com");
+            };
+            if (item.id === 'textarea') {
+                this._validateField(
+                    item, 
+                    /.+/, 
+                    "Поле не может быть пустым!");
+            };
+        };
+        if (this._stopValidity) {
+            // Это на случай реальной отправки формы
+            // проверяем прошла ли форма валидацию
+            return e.preventDefault();
+        };
+
+        e.preventDefault();
+        alert('Спасибо! Форма успешно отправлена!');
+        basket._onToggleBasket();
+    };
+
+    // Валидируем определенное поле
+    _validateField(item, pattern, say) {
+        let el = document.getElementById(item.id);
+        if (!pattern.test(item.value)) {
+            el.classList.add("is-invalid");
+            el.classList.remove("is-valid");
+            let child = el.parentElement.getElementsByClassName("invalid-feedback");
+            if (child.length) {
+                el.parentElement.removeChild(child[0]);
+            };
+            el.parentElement.insertAdjacentHTML("beforeend", this._invalidFeedback(say));
+            this._stopValidity = true;
+        } else if (!el.classList.contains("is-valid")) {
+            el.classList.add("is-valid");
+            el.classList.remove("is-invalid");
+        };
+    };
+
+    // Возвращает DIV invalid
+    _invalidFeedback(say) {
+        return `<div class="invalid-feedback">${say}</div>`
     };
 };
 
@@ -418,19 +581,4 @@ basket.fetchBasket(() => {
     basket.render();
 });
 
-
-// Слушает кнопки "Добавить"
-document.onclick = e => {
-    if ( e.target.classList.contains('btn--plus') ){
-        let idProd = e.target.dataset.id;
-        basket.addGoodsBasket(idProd);
-    };
-};
-
-// Слушает кнопки "Удалить"
-document.addEventListener('click', function(e) {
-    if ( e.target.classList.contains('btn--minus') ){
-        let idProd = e.target.dataset.id;
-        basket.removeGoodsBasket(idProd);
-    };
-});
+const writeTo = new WriteTo();

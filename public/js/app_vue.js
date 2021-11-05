@@ -1,4 +1,4 @@
-const API_URL = "https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses/"
+const API_URL = "http://127.0.0.1:3000/"
 
 Vue.component('cart', {
     template: `<div class="basket-modal" v-if="visible" id="goodsModal">
@@ -172,6 +172,61 @@ Vue.component('search', {
     },
 });
 
+Vue.component('good-card', {
+    template: `<div class="card  col  col-md-6  col-sm-12  m-3" style="width: 18rem;">
+        <img src="img/6.jpg" class="card-img-top" alt="...">
+        <div class="card-body">
+            <h5 class="card-title">{{ title }}</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <p>{{ price }} р.</p>
+            <div class="d-flex">
+                <button @click="addToCart" class="btn  btn-success  w-100  btn-sm  mx-1  btn--plus">Добавить</button>
+                <button @click="removeToCart" class="btn  btn-danger  w-100  btn-sm  mx-1  btn--minus">Удалить</button>
+            </div>
+        </div>
+    </div>`,
+    props: {
+        title: String,
+        price: Number,
+        prod_id: Number,
+    },
+    methods: {
+        addToCart() {
+            fetch(`${API_URL}addToCart`, {
+              method: "POST",
+              headers: {
+                'Content-Type': 'application/JSON'
+              },
+              body: JSON.stringify({id: this.prod_id, product_name: this.title, price: this.price})
+            });
+        },
+        removeToCart() {
+            fetch(`${API_URL}removeToCart`, {
+                method: "DELETE",
+                headers: {
+                  'Content-Type': 'application/JSON'
+                },
+                body: JSON.stringify({id: this.prod_id})
+              });
+        },
+    },
+});
+
+Vue.component('goods-list', {
+    template: `<div class="goods-list  row  mt-5">
+        <good-card
+        v-for="good of list"
+        v-bind:key="good.id_product"
+        v-bind:title="good.product_name"
+        v-bind:price="good.price"
+        v-bind:prod_id="good.id_product"
+        ></good-card>
+    </div>`,
+    props: {
+        list: Array,
+    }
+});
+
 
 new Vue({
     el: '#app',
@@ -187,7 +242,7 @@ new Vue({
     },
     methods: {
         loadGoods() {
-            fetch(`${API_URL}catalogData.json`)
+            fetch(`${API_URL}catalogData`)
                 .then((request) => request.json())
                 .then((data) => {
                     this.goods = data;
@@ -195,10 +250,11 @@ new Vue({
                 });
         },
         loadBasket() {
-            fetch(`${API_URL}getBasket.json`)
+            fetch(`${API_URL}getBasket`)
                 .then((request) => request.json())
                 .then((data) => {
-                    this.basketList = data.contents;
+                    console.log(data);
+                    this.basketList = data;
                 });
         },
         filterGoods(searchLine) {
@@ -209,7 +265,17 @@ new Vue({
             const regexp = new RegExp(searchLine, 'i');
             this.filteredGoods = this.goods.filter(good => regexp.test(good.product_name));
         },
+        addToCart() {
+            fetch(API_URL+"addToCart", {
+              method: "POST",
+              headers: {
+                'Content-Type': 'application/JSON'
+              },
+              body: JSON.stringify({product_name: this.title, price: this.price})
+            })
+          },
         isVisibleCart() {
+            this.loadBasket();
             this.isVisibleCard = !this.isVisibleCard;
         },
         isVisibleWriteTo() {

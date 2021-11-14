@@ -1,0 +1,404 @@
+.container {
+    max-width: 960px;
+    padding: 0 15px;
+    margin: 0 auto;
+}
+
+body {
+    margin: 0;
+
+    font-family: 'PT Sans', sans-serif;
+    color: black;
+    font-size: 16px;
+    line-height: 1.4;
+
+    /* Сглаживаем шрифты */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+.body__noscroll {
+    max-height: 100vh;
+    overflow: hidden;
+}
+
+
+/*===================
+       HEADER
+===================*/
+.header {
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgb(120, 216, 101);
+}
+
+.header__item {
+    height: 85px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header__left {
+    display: flex;
+}
+
+.header__link {
+    font-size: 24px;
+    font-weight: bold;
+    color: chocolate;
+    text-decoration: none;
+}
+
+.header__cart {
+    display: flex;
+    align-items: center;
+}
+
+.header__cart-button {
+    width: 55px;
+    height: 55px;
+
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.counter {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+
+    border-radius: 50%;
+    background-color: black;
+}
+
+.counter__text {
+    color: cornsilk;
+    font-size: 16px;
+}
+
+.price__text {
+    margin: 0;
+    padding-left: 20px;
+}
+
+
+
+/*=================== 
+        PAGE
+=================== */
+.page {
+    margin-top: 120px;
+}
+
+
+
+/*=================== 
+      CATALOG
+=================== */
+.catalog__cart-box {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cart {
+    display: flex;
+    flex-direction: column;
+    align-items: self-end;
+    justify-content: space-between;
+    margin: 20px 10px;
+    padding: 10px;
+    border: darkgreen 2px solid;
+    border-radius: 2%;
+}
+
+
+
+/*=================== 
+      BASKET
+=================== */
+.goods__item {
+    margin-bottom: 20px;
+}
+
+.cart__button {
+    width: 100%;
+
+    display: flex;
+    justify-content: space-between;
+}
+
+.btn {
+    padding: 10px;
+    
+    font-size: 12px;
+    color: bisque;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    border: none;
+    border-radius: 2%;
+
+    outline: none;
+    
+    transition: all .2s linear;
+
+}
+
+.btn--plus {
+    background-color: #66A182;
+}
+
+.btn--plus:hover {
+    background-color: #91c7ab;
+}
+
+.btn--minus {
+    background-color: #FF6766;
+}
+
+.btn--minus:hover {
+    background-color: #fd8b8b;
+}
+
+.basket__list {
+    padding: 0 10px;
+}
+
+.goods__item {
+    padding-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.goods__left {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.goods__title {
+    min-width: 100px;
+    margin-right: 20px;
+}
+
+.goods__img {
+    width: auto;
+    height: 50px;
+    padding: 5px;
+
+    border: olivedrab 1px solid;
+    border-radius: 5%;
+}
+
+.goods__right {
+    display: flex;
+    align-items: center;
+}
+
+.goods__btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+
+    font-size: 28px;
+    color: black;
+
+    background-color: #fff;
+    border-radius: 5%;
+
+    transition: all .2s linear;
+}
+
+.goods__btn:hover {
+    color: white;
+}
+
+.goods__btn--add {
+    border: #66A182 2px solid;
+}
+
+.goods__btn--add:hover {
+    background-color: #66A182;
+}
+
+
+.goods__btn--remove {
+    border: #FF6766 2px solid;
+}
+
+.goods__btn--remove:hover {
+    background-color: #FF6766;
+}
+
+.goods__number {
+    margin: 0 20px;
+}
+
+
+
+/*=================== 
+      BASKET MODAL
+=================== */
+.basket-modal {
+    align-items: center;
+
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    background-color: rgba(0, 0, 0, .9);
+
+    padding: 3px 15px;
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+    
+}
+
+.basket-modal__active {
+    display: flex;
+}
+
+.basket-modal__inner {
+    margin-top: 100px;
+    margin-bottom: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.basket-modal__content {
+    /* width: 700px; */
+    min-width: 500px;
+    min-height: 150px;
+    padding: 30px 60px;
+    margin: 100px 0 auto;
+
+
+    position: relative;
+    top: 10px;
+
+    background-color: #fff;
+    opacity: 1;
+}
+
+.basket__title {
+    margin-top: 0;
+}
+
+.separator {
+    width: 100%;
+    height: 1px;
+
+    background-color: #000;
+}
+
+.total {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.total__text {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.total__num {
+    margin-left: 25px;
+
+    display: flex;
+    align-items: center;
+
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.button__close {
+    position: absolute;
+    top: -33px;
+    right: 0;
+
+    background-color: transparent;
+    outline: none;
+    cursor: pointer;
+    border: none;
+}
+
+.basket__next {
+    display: flex;
+    justify-content: center;
+}
+
+.next__button {
+    padding: 8px 20px;
+    margin-bottom: 20px;
+}
+
+
+
+/*=================== 
+      ADDRESS MODAL
+=================== */
+.modal__form-input {
+    min-width: 300px;
+    height: 20px;
+    display: flex;
+}
+
+
+/*=================== 
+      COMMENT MODAL
+=================== */
+.modal__form-input-comment {
+    min-width: 300px;
+    min-height: 100px;
+    display: flex;
+}
+
+
+/* -------------------- */
+.modal__form-input::placeholder,
+.modal__form-input-comment::placeholder {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.info__item {
+    display: flex;
+    align-items: center;
+}
+
+.info__title {
+    margin:  0 20px;
+    padding: 0;
+}
+
+.info__value{
+    margin: 0;
+    padding: 0;
+}
+
+.thanks__text {
+    font-size: 48px;
+    text-align: center;
+}
+
+.basket__continue {
+    display: flex;
+    justify-content: center;
+}
+
+.continue__button {
+    padding: 8px 20px;
+    margin: 20px 0;
+}
